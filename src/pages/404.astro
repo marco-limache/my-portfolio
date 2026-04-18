@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 — Marco Limache">
+  <section class="min-h-[calc(100vh-3.5rem)] flex items-center border-b-2 border-ink">
+    <div class="max-w-6xl mx-auto px-6 w-full">
+      <span class="section-label mb-8 block">Error</span>
+      <h1 class="text-8xl md:text-[10rem] font-bold leading-none tracking-tight mb-8 text-accent">
+        404
+      </h1>
+      <p class="text-2xl font-bold mb-4">Page not found.</p>
+      <p class="text-lg text-muted mb-12 max-w-md">
+        This route doesn't exist. Unlike good infrastructure, this one wasn't
+        designed to handle all traffic.
+      </p>
+      <a
+        href="/"
+        class="group inline-flex items-center gap-3 font-mono text-sm uppercase tracking-widest border-2 border-ink px-6 py-3 hover:bg-ink hover:text-paper transition-colors duration-200"
+      >
+        <span class="text-accent">←</span> Back to home
+      </a>
+    </div>
+  </section>
+</BaseLayout>
