@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ink: #0d0d0d;
+    --paper: #fafaf8;
+    --accent: #c0392b;
+    --muted: #6b7280;
+    --border: #d1d1cc;
+  }
+
+  html {
+    background-color: var(--paper);
+    color: var(--ink);
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: var(--ink);
+    color: var(--paper);
+  }
+
+  /* Focus ring */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--paper);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ink);
+  }
+}
+
+@layer components {
+  /* Section label (mono, uppercase, muted) */
+  .section-label {
+    @apply font-mono text-xs tracking-widest uppercase text-muted;
+  }
+
+  /* Brutal border utility */
+  .border-brutal {
+    @apply border-2 border-ink;
+  }
+
+  /* Blog prose */
+  .prose-brutal {
+    @apply text-ink max-w-none;
+  }
+
+  .prose-brutal h2 {
+    @apply text-3xl font-bold mt-12 mb-6 border-t-2 border-ink pt-8;
+  }
+
+  .prose-brutal h3 {
+    @apply text-xl font-bold mt-8 mb-4;
+  }
+
+  .prose-brutal p {
+    @apply text-lg leading-relaxed text-muted mb-6;
+  }
+
+  .prose-brutal a {
+    @apply text-ink font-medium underline hover:text-accent transition-colors;
+  }
+
+  .prose-brutal code {
+    @apply font-mono text-sm bg-ink text-paper px-1.5 py-0.5;
+  }
+
+  .prose-brutal pre {
+    @apply bg-ink text-paper font-mono text-sm p-6 overflow-x-auto my-8 border-l-4 border-accent;
+  }
+
+  .prose-brutal pre code {
+    @apply bg-transparent p-0 text-paper;
+  }
+
+  .prose-brutal blockquote {
+    @apply pl-6 border-l-4 border-accent my-8;
+  }
+
+  .prose-brutal blockquote p {
+    @apply text-ink font-medium italic;
+  }
+
+  .prose-brutal ul {
+    @apply list-none space-y-2 mb-6;
+  }
+
+  .prose-brutal ul li {
+    @apply flex gap-3 text-lg text-muted;
+  }
+
+  .prose-brutal ul li::before {
+    content: '—';
+    @apply text-accent font-mono flex-shrink-0;
+  }
+
+  .prose-brutal ol {
+    @apply space-y-2 mb-6;
+  }
+
+  .prose-brutal ol li {
+    @apply text-lg text-muted;
+  }
+
+  .prose-brutal strong {
+    @apply font-bold text-ink;
+  }
+}

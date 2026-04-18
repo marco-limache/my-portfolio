@@ -1,0 +1,100 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getCollection } from 'astro:content'
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft)
+const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+
+const formatDate = (d: Date) =>
+  d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })
+
+// Group posts by year
+const byYear = posts.reduce<Record<number, typeof posts>>((acc, post) => {
+  const year = post.data.pubDate.getFullYear()
+  if (!acc[year]) acc[year] = []
+  acc[year].push(post)
+  return acc
+}, {})
+
+const years = Object.keys(byYear)
+  .map(Number)
+  .sort((a, b) => b - a)
+---
+
+<BaseLayout
+  title="Blog — Marco Limache"
+  description="Technical writing on SRE, cloud architecture, and platform engineering by Marco Limache."
+>
+  <!-- Header -->
+  <section class="border-b-2 border-ink py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <a
+        href="/"
+        class="font-mono text-xs uppercase tracking-widest text-muted hover:text-ink transition-colors duration-150 inline-flex items-center gap-2 mb-12"
+      >
+        <span class="text-accent">←</span> Home
+      </a>
+
+      <span class="section-label mb-6 block">Writing</span>
+
+      <h1 class="text-5xl md:text-7xl font-bold leading-none tracking-tight mb-6">Blog.</h1>
+      <p class="text-xl text-muted leading-relaxed max-w-xl">
+        Architecture decisions, SRE practices, and platform engineering — written for engineers who
+        care about the "why" behind the "how".
+      </p>
+    </div>
+  </section>
+
+  <!-- Posts list -->
+  <section class="py-12">
+    <div class="max-w-6xl mx-auto px-6">
+      {
+        posts.length === 0 ? (
+          <div class="py-24 text-center border-t-2 border-ink">
+            <p class="font-mono text-sm text-muted">First post coming soon.</p>
+          </div>
+        ) : (
+          years.map((year) => (
+            <div class="mb-4">
+              {/* Year header */}
+              <div class="border-t-2 border-ink py-6">
+                <span class="font-mono text-xs uppercase tracking-widest text-muted">{year}</span>
+              </div>
+
+              {byYear[year].map((post) => (
+                <a
+                  href={`/blog/${post.slug}`}
+                  class="group block border-t border-border py-7 grid grid-cols-1 md:grid-cols-12 gap-y-3 md:gap-x-8 hover:bg-ink hover:text-paper transition-colors duration-200 px-2 -mx-2"
+                >
+                  {/* Date */}
+                  <div class="md:col-span-2 font-mono text-xs text-muted group-hover:text-paper/50 flex items-start pt-0.5">
+                    {formatDate(post.data.pubDate)}
+                  </div>
+
+                  {/* Content */}
+                  <div class="md:col-span-8">
+                    <p class="font-bold text-xl mb-2">{post.data.title}</p>
+                    <p class="text-base text-muted group-hover:text-paper/60 leading-relaxed">
+                      {post.data.description}
+                    </p>
+                  </div>
+
+                  {/* Tags */}
+                  <div class="md:col-span-2 flex flex-wrap gap-1.5 content-start">
+                    {post.data.tags?.slice(0, 3).map((tag) => (
+                      <span class="font-mono text-xs border border-border group-hover:border-paper/20 px-2 py-0.5 text-muted group-hover:text-paper/50">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </a>
+              ))}
+            </div>
+          ))
+        )
+      }
+
+      <div class="border-t-2 border-ink"></div>
+    </div>
+  </section>
+</BaseLayout>

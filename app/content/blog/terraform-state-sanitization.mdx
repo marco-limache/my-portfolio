@@ -1,0 +1,60 @@
+---
+title: 'Achieving Zero Secrets in Terraform State with HCP Vault'
+description: 'A deep dive into migrating an AWS infrastructure to a zero-trust model using Terraform Cloud, HCP Vault, and write-only/ephemeral attributes.'
+pubDate: 2026-04-18
+tags: ['terraform', 'vault', 'security', 'aws']
+readingTime: '8 min read'
+---
+
+## The Problem Space
+
+Managing cloud infrastructure at scale is challenging, but managing the secrets required to provision that infrastructure is where the real complexity lies.
+
+For a recent engagement, the objective was clear but daunting: clean up and sanitize all Terraform state files. The existing architecture across the AWS ecosystem relied on credentials or long-lived keys that ended up in plain text within the Terraform state. In a modern security posture, having your database passwords, API tokens, and TLS certificates sitting in a `terraform.tfstate` file is an unacceptable risk.
+
+We needed a zero-trust architecture where we could achieve "No Secrets in State," with zero downtime and seamless impact on our users during the migration.
+
+## The Architecture: HCP Vault + Terraform Cloud
+
+Our target stack consisted of:
+
+- **AWS** as the primary cloud provider.
+- **HCP Vault** as the single and absolute source of truth for all secrets.
+- **Terraform Cloud** for state management, collaboration, and execution.
+
+### The Source of Truth: HashiCorp Vault
+
+Before we could sanitize the state, we needed a place to actually put the secrets. HCP Vault became our centralized secrets engine. Instead of passing variables through Terraform Cloud workspace variables or `.tfvars` files, Terraform would authenticate to Vault dynamically and retrieve exactly what it needed during the `plan` and `apply` phases.
+
+## Achieving "No Secrets in State"
+
+Historically, Terraform has struggled with state sanitization. If a provider required a password, Terraform had to store it in the state file to track drift. However, with recent advancements in the ecosystem, we leveraged two critical patterns to solve this:
+
+### 1. Ephemeral Secrets
+
+For credentials that needed to be generated on the fly, we heavily leaned on Vault's dynamic secrets engines (such as the AWS secrets engine or database secrets engines). Terraform requests a set of short-lived credentials just in time. These ephemerals exist only long enough for the deployment to finish. Even if a reference is tracked, the credential itself is useless shortly after the run completes.
+
+### 2. Write-Only Attributes
+
+With modern Terraform features and providers, we can utilize `write_only` attributes. When a resource defines an attribute as write-only, Terraform sends the value to the provider but _does not_ persist it in the state file.
+
+This was a game changer for things like RDS passwords or IAM access configurations. We could generate the password in Vault, pass it to the AWS provider, and have total confidence that subsequent state pulls wouldn't expose the underlying credential.
+
+## The Migration Strategy
+
+Migrating to a zero-trust state without impacting the engineering teams relying on this infrastructure required careful orchestration:
+
+1. **Vault Integration:** First, we integrated the Vault provider into our Terraform modules and migrated all static credentials into Vault KV stores.
+2. **Provider Upgrades:** We upgraded all target providers (specifically AWS) to versions supporting write-only attributes and modern sensitive variable handling.
+3. **State Surgery:** We used `terraform state rm` and `import` carefully on critical resources to transition them to the new module structures without triggering destructive rebuilds or replacing underlying AWS infrastructure.
+4. **Dynamic OIDC Transition:** We shifted from static long-lived IAM users to dynamic Trust policies. Terraform Cloud pipelines were given JWTs (via OIDC) to authenticate directly to Vault and AWS, eliminating the classic "secret to secret" bootstrapping problem entirely.
+
+## Results
+
+After the migration was complete:
+
+- **State Sanitization:** Near 100% of plain-text passwords and critical tokens were eliminated from our Terraform Cloud states.
+- **Zero Impact Migration:** Product teams experienced no downtime or pipeline failures during the entire transition phase.
+- **Enhanced Security Posture:** By utilizing HCP Vault as the single source of truth and enforcing ephemeral, write-only workflows, we achieved a true zero-trust infrastructure deployment model.
+
+If you are struggling with sensitive data leaking into your Terraform state and want to design a modern, secure IaC pipeline, this is the foundational step of building a secure platform.

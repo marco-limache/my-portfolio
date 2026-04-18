@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import HomePage from '../components/HomePage.astro'
+import { ui } from '../i18n/ui'
+
+const t = ui['es']
+---
+
+<BaseLayout title={t.meta.title} description={t.meta.description} lang="es">
+  <HomePage lang="es" />
+</BaseLayout>
